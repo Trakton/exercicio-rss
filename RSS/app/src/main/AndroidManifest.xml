@@ -19,6 +19,18 @@
             </intent-filter>
         </activity>
         <activity android:name=".PreferenceActivity"/>
+        <service android:name=".FeedService"
+            android:enabled="true"
+            android:exported="true"/>
+        <receiver
+            android:name=".FeedReceiver"
+            android:enabled="true"
+            android:exported="true"
+            >
+            <intent-filter>
+                <action android:name="br.ufpe.cin.if710.rss.fresh_content" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

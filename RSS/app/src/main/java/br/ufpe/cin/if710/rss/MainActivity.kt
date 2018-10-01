@@ -16,7 +16,11 @@ import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.util.Log
+import android.net.Uri
 
 import br.ufpe.cin.if710.rss.db.SQLiteRSSHelper
 
@@ -24,13 +28,26 @@ class MainActivity : Activity() {
 
     private var conteudoRSS: RecyclerView? = null
     private lateinit var db: SQLiteRSSHelper
+    private val manager = LinearLayoutManager(this)
+    private lateinit var filter: IntentFilter
+
+    val receiver = object: BroadcastReceiver() {
+        override fun onReceive(c: Context?, i: Intent?) {
+            if (i?.action?.equals("finished") == true) {
+                conteudoRSS!!.apply {
+                    layoutManager = manager
+                    adapter = Adapter(db)
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         conteudoRSS = findViewById(R.id.conteudoRSS) as RecyclerView
         db = SQLiteRSSHelper.getInstance(this)
-
+        filter = IntentFilter("finished")
     }
 
     override fun onResume() {
@@ -38,19 +55,19 @@ class MainActivity : Activity() {
         var pref = PreferenceManager.getDefaultSharedPreferences(this)
         try {
             doAsync {
-                val feedXML = getRssFeed(pref.getString("rssfeed", getString(R.string.previous_rssfeed)))
-                var items = ParserRSS.parse(feedXML)
-                items.forEach { db.insertItem(it) }
-                uiThread {
-                    conteudoRSS!!.apply {
-                        layoutManager = LinearLayoutManager(it)
-                        adapter = Adapter(db)
-                    }
-                }
+                val service = Intent(applicationContext, FeedService::class.java)
+                service.data = Uri.parse(pref.getString("rssfeed", getString(R.string.previous_rssfeed)))
+                registerReceiver(receiver, filter)
+                startService(service)
             }
         } catch (e: IOException) {
             e.printStackTrace()
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(receiver)
     }
 
     @Throws(IOException::class)
