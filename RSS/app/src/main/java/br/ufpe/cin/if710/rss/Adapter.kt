@@ -8,8 +8,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import br.ufpe.cin.if710.rss.db.SQLiteRSSHelper
 
-class Adapter(private val items: List<ItemRSS>) : RecyclerView.Adapter<Adapter.ViewHolder>() {
+
+class Adapter(private val db: SQLiteRSSHelper) : RecyclerView.Adapter<Adapter.ViewHolder>() {
 
     class ViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)
 
@@ -21,13 +23,14 @@ class Adapter(private val items: List<ItemRSS>) : RecyclerView.Adapter<Adapter.V
     override fun onBindViewHolder(viewHolder: ViewHolder, pos: Int) {
         val vhText = viewHolder.layout.findViewById(R.id.item_data) as TextView
         val vhTitle = viewHolder.layout.findViewById(R.id.item_titulo) as TextView
-        vhText.text = items[pos].description
-        vhTitle.text = items[pos].title
+        vhText.text = db.items[pos].description
+        vhTitle.text = db.items[pos].title
         vhTitle.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(items[pos].link))
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(db.items[pos].link))
+            db.markAsRead(db.items[pos].link)
             startActivity(vhTitle.context, intent, null)
         }
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount() = db.items.size
 }

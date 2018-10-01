@@ -44,7 +44,7 @@ class MainActivity : Activity() {
                 uiThread {
                     conteudoRSS!!.apply {
                         layoutManager = LinearLayoutManager(it)
-                        adapter = Adapter(db.items)
+                        adapter = Adapter(db)
                     }
                 }
             }
