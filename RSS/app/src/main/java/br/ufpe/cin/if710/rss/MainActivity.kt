@@ -18,14 +18,19 @@ import android.view.MenuItem
 import android.content.Intent
 import android.util.Log
 
+import br.ufpe.cin.if710.rss.db.SQLiteRSSHelper
+
 class MainActivity : Activity() {
 
     private var conteudoRSS: RecyclerView? = null
+    private lateinit var db: SQLiteRSSHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         conteudoRSS = findViewById(R.id.conteudoRSS) as RecyclerView
+        db = SQLiteRSSHelper.getInstance(this)
+
     }
 
     override fun onResume() {
@@ -34,10 +39,12 @@ class MainActivity : Activity() {
         try {
             doAsync {
                 val feedXML = getRssFeed(pref.getString("rssfeed", getString(R.string.previous_rssfeed)))
+                var items = ParserRSS.parse(feedXML)
+                items.forEach { db.insertItem(it) }
                 uiThread {
                     conteudoRSS!!.apply {
                         layoutManager = LinearLayoutManager(it)
-                        adapter = Adapter(ParserRSS.parse(feedXML))
+                        adapter = Adapter(db.items)
                     }
                 }
             }
