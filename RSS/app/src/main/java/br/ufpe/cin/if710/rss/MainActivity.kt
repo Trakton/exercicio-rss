@@ -12,6 +12,11 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
+import android.preference.PreferenceManager
+import android.view.Menu
+import android.view.MenuItem
+import android.content.Intent
+import android.util.Log
 
 class MainActivity : Activity() {
 
@@ -23,11 +28,12 @@ class MainActivity : Activity() {
         conteudoRSS = findViewById(R.id.conteudoRSS) as RecyclerView
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
+        var pref = PreferenceManager.getDefaultSharedPreferences(this)
         try {
             doAsync {
-                val feedXML = getRssFeed(getString(R.string.rssfeed))
+                val feedXML = getRssFeed(pref.getString("rssfeed", getString(R.string.previous_rssfeed)))
                 uiThread {
                     conteudoRSS!!.apply {
                         layoutManager = LinearLayoutManager(it)
@@ -61,5 +67,20 @@ class MainActivity : Activity() {
             input?.close()
         }
         return rss
+    }
+
+    override fun onCreateOptionsMenu(options: Menu?): Boolean {
+        menuInflater.inflate(R.menu.options, options)
+        return true
+    }
+
+    override fun onOptionsItemSelected(i: MenuItem?): Boolean {
+        return when (i?.itemId) {
+            R.id.config -> {
+                startActivity(Intent(applicationContext, PreferenceActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(i)
+        }
     }
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:key="@+id/pref_screen">
+    <EditTextPreference
+        android:key="rssfeed"
+        android:title="Feed"
+        android:dialogTitle="Change feed"
+        android:dialogMessage="URL of the new feed:"
+        android:positiveButtonText="Confirm"
+        android:negativeButtonText="Back"
+        />
+</PreferenceScreen>
